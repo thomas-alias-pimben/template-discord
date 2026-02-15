@@ -73,26 +73,29 @@ module.exports = {
     }
     if(interaction.options.getSubcommand() === "user")
     {
-      
+      text = ""
       const user = interaction.options.getUser("target")
       if(user.bot)
       {
-        await interaction.reply("c'est " + user.username+ " !\nc'est un bot");
+        text ="c'est " + user.username+ " !\nc'est un bot";
       }
       else
       {
         const member = interaction.guild.members.cache.get(user.id)
         if(member.nickname !== null)
         {  
-            await interaction.reply("c'est " + member.nickname + " !\npseudo: "+ user.globalName  );
+            text ="c'est " + member.nickname + " !\npseudo: "+ user.globalName ;
         }
         else
-          {
-            await interaction.reply("c'est " + user.globalName  );
-          }
+        {
+          text ="c'est " + user.globalName  ;
         }
-      
+      }
+     text ="c'est " + user.globalName  ;
     }
-    
+    await interaction.reply({
+            content:text ,
+            flags: MessageFlags.Ephemeral,
+          });
   },
 };
