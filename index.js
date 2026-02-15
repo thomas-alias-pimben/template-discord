@@ -1,0 +1,178 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const {
+  Client,
+  Collection,
+  Events,
+  GatewayIntentBits,
+  IntentsBitField,
+  MessageFlags
+} = require("discord.js");
+
+
+//initialisation du bot discord
+const { SlashCommandIntegerOption } = require("@discordjs/builders");
+
+const { token, adminId, guildId } = require("./config.json");
+const { isVocal } = require("./config.json");
+
+const idAdmin = adminId;
+
+let pageperso = false;
+let estEnVoc = false;
+//permet de creer les commandes
+require("./utils/registeryCommand");
+const { joinVoiceChannel } = require("@discordjs/voice");
+
+async function download(uri, filename, callback) {
+  try {
+    const response = await axios({
+      url: uri,
+      method: "GET",
+      responseType: "stream",
+    });
+
+    const writer = fs.createWriteStream(filename);
+    response.data.pipe(writer);
+
+    writer.on("finish", callback);
+    writer.on("error", callback);
+  } catch (error) {
+    console.error("Error downloading file:", error);
+  }
+}
+
+// Create a new client instance
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    IntentsBitField.Flags.GuildPresences,
+    GatewayIntentBits.GuildVoiceStates,
+    128,
+  ],
+});
+
+client.commands = new Collection();
+
+const foldersPath = path.join(__dirname, "commands");
+const commandFolders = fs.readdirSync(foldersPath);
+
+for (const folder of commandFolders) {
+  const commandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs
+    .readdirSync(commandsPath)
+    .filter((file) => file.endsWith(".js"));
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    // Set a new item in the Collection with the key as the command name and the value as the exported module
+    if ("data" in command && "execute" in command) {
+      client.commands.set(command.data.name, command);
+    } else {
+      console.log(
+        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
+      );
+    }
+  }
+}
+
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (interaction.isChatInputCommand()) {
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`,
+      );
+      return;
+    }
+
+    try {
+      await command.execute(interaction);
+    } catch (error) {
+      console.error(error);
+      if (interaction.replied || interaction.deferred) {
+        await interaction.followUp({
+          content: "There was an error while executing this command!",
+          flags: MessageFlags.Ephemeral,
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+    }
+  } else if (interaction.isAutocomplete()) {
+    const command = interaction.client.commands.get(interaction.commandName);
+
+    if (!command) {
+      console.error(
+        `No command matching ${interaction.commandName} was found.`,
+      );
+      return;
+    }
+
+    try {
+      await command.autocomplete(interaction);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+});
+
+client.once("clientReady", async (client) => {
+  if (isVocal) {
+    console.log("connection au vocal...");
+    await connecterBotChannelVocal();
+  }
+
+  usernameAdmin = client.users.cache.get(idAdmin);
+  console.log(`${client.user.tag} connecté`);
+  console.log(
+    "Je suis prêt " +
+      usernameAdmin.username +
+      " °( ^-^)°",
+  );
+  client.user.setActivity("do bot thing");
+  //on télécharge l'image d'avatar
+  /*await download(
+    client.user.displayAvatarURL({ extension: "png" }),
+    "public/image/avatar.png",
+    function () {},
+  );*/
+});
+
+async function connecterBotChannelVocal() {
+  const guild = client.guilds.cache.get(guildId);
+
+  if (guild) {
+    const voiceChannels = guild.channels.valueOf().filter((channel) => {
+      return channel.type === 2;
+    });
+    voiceChannels.forEach((channel) => {
+      let voiceChannel = client.channels.cache.get(channel.id);
+      const members = channel.members;
+
+      if (members.some((member) => member.id === idAdmin)) {
+        console.log("L'utilisateur est connecté au channel vocal.");
+        const { joinVoiceChannel } = require("@discordjs/voice");
+        connection = joinVoiceChannel({
+          channelId: voiceChannel.id,
+          guildId: voiceChannel.guild.id,
+          adapterCreator: voiceChannel.guild.voiceAdapterCreator,
+        });
+
+        estEnVoc = true;
+      }
+    });
+  } else {
+    console.log("Serveur non trouvé.");
+  }
+}
+
+// Log in to Discord with your client's token
+client.login(token);
