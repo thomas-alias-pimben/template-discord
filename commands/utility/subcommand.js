@@ -1,6 +1,11 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const config = require("../../config.json");
 const { ChannelType } = require('discord.js');
+const { MessageFlags } = require('discord.js');
+
+const {
+  afficherPlusieursPartie,
+} = require("../../utils/manipulerjson");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -22,8 +27,8 @@ module.exports = {
    
     if(interaction.options.getSubcommand() === "server")
     {
-      text = "``` \n"
-      text += "nom:"+interaction.guild.name+"\n"
+      
+      text = "nom:"+interaction.guild.name+"\n"
       text +="les channels\n"
 
       i=1
@@ -46,12 +51,25 @@ module.exports = {
       });
       
       
-      text+="\n ```"
+     
       
       
+      partie = afficherPlusieursPartie(text)
+
+      await interaction.reply({
+            content: "```" + partie[0] + "```",
+            flags: MessageFlags.Ephemeral,
+          });
+          if (partie.length > 1) {
+            partie.shift();
+            for (const element of partie) {
+              await interaction.followUp({
+                content: "```" + element + "```",
+                flags: MessageFlags.Ephemeral,
+              });
+            }
+          }
       
-      
-      await interaction.reply(text);
     }
     if(interaction.options.getSubcommand() === "user")
     {
