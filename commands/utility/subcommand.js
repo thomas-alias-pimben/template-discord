@@ -91,11 +91,14 @@ module.exports = {
           text ="c'est " + user.globalName  ;
         }
       }
-     text ="c'est " + user.globalName  ;
-    }
-    await interaction.reply({
+    
+
+     await interaction.reply({
             content:text ,
             flags: MessageFlags.Ephemeral,
           });
+
+    }
+    
   },
 };
