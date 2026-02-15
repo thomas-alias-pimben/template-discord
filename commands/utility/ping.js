@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { MessageFlags } = require('discord.js');
-
+const { MessageFlags, Status } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,15 +8,16 @@ module.exports = {
   async execute(interaction) {
     const sent = await interaction.reply({
       content:
-        "Pong! \n Websocket heartbeat:" + interaction.client.ws.ping + "ms.",
+        "Pong! \n Websocket heartbeat:" + interaction.client.ws.ping + "ms. status:"+Status[interaction.client.ws.status],
       flags: MessageFlags.Ephemeral,
       fetchReply: true,
     });
     await interaction.editReply(
-      `Pong! \n Websocket heartbeat: ${interaction.client.ws.ping} ms.\nRoundtrip latency: ${sent.createdTimestamp - interaction.createdTimestamp}ms`,
+      `Pong! \n Websocket heartbeat: ${interaction.client.ws.ping} ms.\nRoundtrip latency: ${sent.createdTimestamp - interaction.createdTimestamp}ms \n  status:${Status[interaction.client.ws.status]}`,
     );
     console.log(
-      ` ${interaction.user.username} a utilisé ping : Websocket heartbeat: ${interaction.client.ws.ping} ms. \n Roundtrip latency: ${sent.createdTimestamp - interaction.createdTimestamp}ms`,
+      ` ${interaction.user.username} a utilisé ping : Websocket heartbeat: ${interaction.client.ws.ping} ms. \n Roundtrip latency: ${sent.createdTimestamp - interaction.createdTimestamp}ms \n status:${Status[interaction.client.ws.status]} `,
     );
+    
   },
 };
