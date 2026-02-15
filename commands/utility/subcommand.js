@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 const config = require("../../config.json");
+const { ChannelType } = require('discord.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -17,9 +18,40 @@ module.exports = {
       subcommand.setName("server").setDescription("Info about the server"),
     ),
   async execute(interaction) {
+   
+   
     if(interaction.options.getSubcommand() === "server")
     {
-      await interaction.reply(interaction.options.getSubcommand());
+      text = "``` \n"
+      text += "nom:"+interaction.guild.name+"\n"
+      text +="les channels\n"
+
+      i=1
+      //savoir si le channel est public
+       interaction.guild.channels.cache.forEach(channel => {
+        const everyoneRole = channel.guild.roles.everyone;
+        const canEveryoneView = channel
+                                .permissionsFor(everyoneRole)
+                                .has('ViewChannel');
+        
+        
+        if (canEveryoneView && channel.type !== ChannelType.GuildCategory)
+        {
+          text += "\n\tchannel " + i +" : "+channel.name+"\n"
+          text += "\t\tid:"+ channel.id+"\n"
+          text += "\t\ttype:"+ ChannelType[channel.type]+"\n"
+          
+         i++
+        }
+      });
+      
+      
+      text+="\n ```"
+      
+      
+      
+      
+      await interaction.reply(text);
     }
     if(interaction.options.getSubcommand() === "user")
     {
