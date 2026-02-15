@@ -1,13 +1,6 @@
 # template-discord
 a template for me when I want to create a bot discord
 
-## guide
- [english](./README-english.md)
-
- [français](./README-fr.md)
-
-
-
 # Before starting the bot
 
 ## add the config file
