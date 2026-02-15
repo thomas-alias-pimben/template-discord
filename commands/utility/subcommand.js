@@ -10,7 +10,7 @@ module.exports = {
         .setName("user")
         .setDescription("Info about a user")
         .addUserOption((option) =>
-          option.setName("target").setDescription("The user"),
+          option.setName("target").setDescription("The user").setRequired(true),
         ),
     )
     .addSubcommand((subcommand) =>
@@ -32,8 +32,15 @@ module.exports = {
       else
       {
         const member = interaction.guild.members.cache.get(user.id)
-        await interaction.reply("c'est " + member.nickname + " !\npseudo: "+ user.globalName  );
-      }
+        if(member.nickname !== null)
+        {  
+            await interaction.reply("c'est " + member.nickname + " !\npseudo: "+ user.globalName  );
+        }
+        else
+          {
+            await interaction.reply("c'est " + user.globalName  );
+          }
+        }
       
     }
     

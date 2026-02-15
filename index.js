@@ -21,26 +21,11 @@ const idAdmin = adminId;
 let pageperso = false;
 let estEnVoc = false;
 //permet de creer les commandes
-require("./utils/registeryCommand");
+require("./utils/registeryCommand.js");
 const { joinVoiceChannel } = require("@discordjs/voice");
 
-async function download(uri, filename, callback) {
-  try {
-    const response = await axios({
-      url: uri,
-      method: "GET",
-      responseType: "stream",
-    });
 
-    const writer = fs.createWriteStream(filename);
-    response.data.pipe(writer);
-
-    writer.on("finish", callback);
-    writer.on("error", callback);
-  } catch (error) {
-    console.error("Error downloading file:", error);
-  }
-}
+const { download } = require("./utils/utils");
 
 // Create a new client instance
 const client = new Client({
@@ -139,11 +124,11 @@ client.once("clientReady", async (client) => {
   );
   client.user.setActivity("do bot thing");
   //on télécharge l'image d'avatar
-  /*await download(
+  await download(
     client.user.displayAvatarURL({ extension: "png" }),
-    "public/image/avatar.png",
+    "image/avatar.png",
     function () {},
-  );*/
+  );
 });
 
 async function connecterBotChannelVocal() {
